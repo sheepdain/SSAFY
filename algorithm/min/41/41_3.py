@@ -1,3 +1,5 @@
+# 2000넘어가면 타임에러
+
 def dfs(money, num):
     global cnt
 
