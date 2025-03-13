@@ -1,6 +1,6 @@
 import sys
 
-sys.setrecursionlimit(10 ** 7)
+sys.setrecursionlimit(150000) # 크기가 크면 메모리 초과 일어날 수 있음
 
 
 def dfs(node):
@@ -23,27 +23,4 @@ visited = [0] * (n + 1)
 cnt = 1
 dfs(r)
 for i in range(1, n + 1):
-    print(visited[i])
-# 위 아래 차이가 뭐지?
-def dfs(t):
-    global cnt
-    visited[t] = cnt
-    line[t].sort()
-    for i in line[t]:
-        if visited[i] == 0:
-            cnt += 1
-            dfs(i)
-
-import sys
-sys.setrecursionlimit(150000)
-N, M, R = map(int, sys.stdin.readline().split())
-line = [[] for _ in range(N+1)]
-visited = [0]*(N+1)  # 저장값
-cnt = 1
-for _ in range(M):
-    a, b = map(int, sys.stdin.readline().split())
-    line[a].append(b)  # 양 방향 간선
-    line[b].append(a)  # 양 방향 간선
-dfs(R)
-for i in range(1, N+1):
     print(visited[i])
