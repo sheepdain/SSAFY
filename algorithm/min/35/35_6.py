@@ -1,7 +1,6 @@
 import heapq
 
 n = int(input())
-
 low = [-500]
 high = []
 for i in range(n):
@@ -14,7 +13,7 @@ for i in range(n):
     if len(low) - 1 > len(high):
         num = -heapq.heappop(low)
         heapq.heappush(high, num)
-    else:
+    elif len(low) - 1 < len(high):
         num = heapq.heappop(high)
         heapq.heappush(low, -num)
     print(-low[0])
