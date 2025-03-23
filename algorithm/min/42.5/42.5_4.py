@@ -1,4 +1,6 @@
-def allow
+# 어려워ㅓ어
+
+def allow():
 
 
 n=int(input())
