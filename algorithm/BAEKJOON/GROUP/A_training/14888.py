@@ -7,22 +7,20 @@ def num(level,total):
     
     for i in range(4):
         if lst[i]!=0:
-            if i==0:
-                lst[i]-=1
-                num(level+1,total+number[level])
-                lst[i]+=1
-            elif i==1:
-                lst[i]-=1
-                num(level+1,total-number[level])
-                lst[i]+=1
-            elif i==2:
-                lst[i]-=1
-                num(level+1,total*number[level])
-                lst[i]+=1
-            elif i==3:
-                lst[i]-=1
-                num(level+1,total//number[level])
-                lst[i]+=1
+            lst[i] -= 1
+            if i == 0:
+                num(level + 1, total + number[level])
+            elif i == 1:
+                num(level + 1, total - number[level])
+            elif i == 2:
+                num(level + 1, total * number[level])
+            elif i == 3:
+                if total < 0:
+                    result = - (abs(total) // number[level])
+                else:
+                    result = total // number[level]
+                num(level + 1, result)
+            lst[i] += 1
 
 
 
