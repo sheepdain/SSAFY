@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow p-4">
+    <h2 class="fw-bold text-center mb-4">📚 도서 등록</h2>
+
+    <form action="{% url 'books:create' %}" method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+
+      <div class="d-grid mt-4">
+        <button type="submit" class="btn btn-primary">등록</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock content %}

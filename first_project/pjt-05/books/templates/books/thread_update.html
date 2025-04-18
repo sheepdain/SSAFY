@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow p-4">
+    <h2 class="fw-bold text-center mb-4">📝 쓰레드 수정</h2>
+
+    <form action="{% url 'books:thread_update' thread.book.pk thread.pk %}" method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ thread_form.as_p }}
+
+      <div class="d-grid gap-2 mt-4">
+        <button type="submit" class="btn btn-success">수정 완료</button>
+        <a href="{% url 'books:thread_detail' thread.pk %}" class="btn btn-outline-secondary">취소</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow p-4">
+    <h2 class="fw-bold text-center mb-4">📝 쓰레드 작성</h2>
+
+    <form action="{% url 'books:thread_create' book.pk %}" method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ thread_form.as_p }}
+
+      <div class="d-grid gap-2 mt-4">
+        <button type="submit" class="btn btn-success">등록</button>
+        <a href="{% url 'books:detail' book.pk %}" class="btn btn-outline-danger">취소</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock content %}
