@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>도서 상세 페이지</h1>
+
+  {% if book.cover %}
+    <div style="width: 300px; margin-bottom:1rem;">
+      <img src="{{ book.cover }}" alt="" class="w-100">
+    </div>
+  {% endif %}
+  
+  <div class="d-flex flex-row justify-content-between align-items-between">
+    <h2>{{ book.title }}</h2>
+    <small style="color: #888;">
+      {{ book.category }}
+    </small>  
+  </div>
+  <p>{{ book.description }}</p>
+  <hr>
+
+  <!-- 작품 정보 섹션 -->
+  <div style="display: flex; justify-content: center; align-items: center; gap: 2rem;">
+    <!-- 작품 텍스트 정보 영역 -->
+    <div style="flex: 1;">
+      <h6>회원 리뷰 평점 : {{ book.customer_review_rank|floatformat:"0" }} / 10</h6>
+      <h6>출판사 : {{ book.publisher }}</h6>
+      <h6>출판일 : {{ book.pub_date }}</h6>
+      <h6>ISBN : {{ book.isbn }}</h6>
+    </div>
+  </div>
+
+  <!-- 작가 정보 섹션 (프로필 + 작가 텍스트 정보) -->
+  <hr>
+  <div style="display: flex; justify-content: center; align-items: center; gap: 2rem;">
+    <!-- 프로필 이미지 영역 -->
+    {% if book.author_photo %}
+      <div style="width: 120px; height: 120px;">
+        <img 
+          src="{{ book.author_photo }}" 
+          alt="{{ book.author }}" 
+          style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
+        >
+      </div>
+    {% endif %}
+    
+    <!-- 작가 텍스트 정보 영역 -->
+    <div style="flex: 1;">
+      <h3>{{ book.author }}</h3>
+      <p>{{ book.author_info }}</p>
+    </div>
+  </div>
+  <div>
+    <small style="color: #888;">
+      ※ 도서 DB 제공 : 알라딘 인터넷서점(www.aladin.co.kr)
+    </small>
+  </div>
+
+  <!-- Thread 영역 -->
+  <hr>
+  <div class="d-flex flex-row justify-content-between">
+    <h2>Thread</h2>
+    {% if user.is_authenticated %}
+      <a href="{% url 'books:thread_create' book.pk %}">쓰레드 작성</a>
+    {% endif %}
+  </div>
+
+  <div>
+    {% for thread in book.thread_set.all %}
+      <div class="d-flex flex-row justify-content-between">
+        <a
+          href="{% url 'books:thread_detail' book.pk thread.pk %}"
+          class="d-flex justify-content-between align-items-center"
+        >
+          <div class="thread-info">
+            <span class="fw-bold">{{ thread.title }}</span>
+            <span class="separator">|</span>
+            <span>{{ thread.user.username }}</span>
+          </div>
+        </a>
+        <div><i class="bi bi-heart-fill me-1"></i> {{ thread.likes.count }}</div>
+      </div>
+    {% empty %}
+      <p>게시글이 없습니다.</p>
+    {% endfor %}
+  </div>
+
+  <hr>
+
+  <div>
+    <a href="{% url 'books:index' %}" class="btn btn-secondary mb-5">BACK</a>
+  </div>
+
+  <hr>
+<h4>📚 유사한 도서 추천</h4>
+<div class="row row-cols-1 row-cols-md-3 g-4 mt-2">
+  {% for rec_book in recommended_books %}
+    <div class="col">
+      <div class="card h-100">
+        {% if rec_book.cover_img %}
+          <img src="{{ rec_book.cover_img.url }}" class="card-img-top" alt="{{ rec_book.title }}">
+        {% endif %}
+        <div class="card-body">
+          <h5 class="card-title">{{ rec_book.title }}</h5>
+          <p class="card-text text-muted">{{ rec_book.description|truncatewords:15 }}</p>
+          <a href="{% url 'books:detail' rec_book.pk %}" class="btn btn-sm btn-outline-primary">자세히 보기</a>
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <p>유사한 도서가 없습니다.</p>
+  {% endfor %}
+</div>
+{% endblock content %}
