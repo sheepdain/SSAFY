@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container my-5">
+  {% if thread.cover_img %}
+  <div class="mb-3" style="width: 100%;">
+    <img src="{{ thread.cover_img.url }}" alt="Thread Cover Image" class="img-fluid">
+  </div>
+  {% endif %}
+
+  <div class="d-flex flex-row justify-content-between align-items-between">
+    <h1 class="mb-3">{{ thread.title }}</h1>
+    <div>
+      {% if thread.user == user %}
+        <a href="{% url 'books:thread_update' book.pk thread.pk %}" class="btn btn-secondary">수정</a>
+        <form action="{% url 'books:thread_delete' book.pk thread.pk %}" method="POST" class="d-inline ms-2">
+          {% csrf_token %}
+          <input type="submit" value="삭제" class="btn btn-danger">
+        </form>
+      {% endif %}
+    </div>
+  </div>
+  
+  <div class="mb-2">
+    <strong>도서:</strong> <a href="{% url 'books:detail' book.pk %}">{{ book.title }}</a>
+    <strong class="ms-2">작성자:</strong> <a href="{% url 'accounts:profile' thread.user.username %}">{{ thread.user.username }}</a>
+    <strong class="ms-2">독서일:</strong> {{ thread.reading_date }}
+  </div>
+  
+  <div class="mb-3">
+    <p>{{ thread.content }}</p>
+  </div>
+  
+  <div id="like-container" class="d-flex flex-row justify-content-start align-items-center gap-4">
+    <!-- 여기에 좋아요 관련 기능을 구현하시오 -->
+     <p>좋아요 수 : <span id="likes-count">{{ thread.likes.all|length }}</span> </p>
+     <form class="like-forms" data-book-id="{{ book.pk }}" data-thread-id="{{ thread.pk }}">
+      {% csrf_token %}
+      {% if request.user in thread.liked_threads.all %}
+        <input id="like-button-{{ thread.pk }}" type="submit" value="좋아요 취소">
+      {% else %}
+        <input id="like-button-{{ thread.pk }}" type="submit" value="좋아요">
+      {% endif %}
+     </form>
+  <hr>
+  
+  <!-- 쓰레드 댓글 출력 섹션 -->
+  <h3>댓글</h3>
+  <div class="mb-3" id="comment-list">
+    {% for comment in thread.comments.all %}
+      <div id="comment-{{ comment.pk }}" class="d-flex flex-row align-items-baseline gap-2">
+        <p>{{ comment.content }}</p>
+        <small ><a href="{% url 'accounts:profile' comment.user.username %}"> ({{ comment.user.username }})</a></small>
+        {% if comment.user == user %}
+          <button class="delete-comment-btn " data-comment-id="{{ comment.pk }}">삭제</button>
+        {% endif %}
+      </div>
+    {% empty %}
+      <p id="no-comments">작성된 댓글이 없습니다.</p>
+    {% endfor %}
+  </div>
+
+  <!-- 댓글 작성 폼 -->
+  <h4>댓글 작성</h4>
+  <form id="comment-form" data-book-id="{{ book.pk }}" data-thread-id="{{ thread.pk }}">
+    {% csrf_token %}
+    {{ comment_form.content }}
+    <input type="submit" value="전송">
+  </form>
+  
+  <hr>
+  
+  <a href="{% url 'books:detail' thread.book.pk %}" class="btn btn-secondary">BACK</a>
+</div>
+{% endblock content %}
+
+{% block script %}
+  <script>
+    const likeContainer = document.querySelector('#like-container')
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value
+    const likesCountSpan = document.querySelector('#likes-count')
+    const commentForm = document.querySelector('#comment-form')
+
+
+    likeContainer.addEventListener('submit', function (event) {
+      event.preventDefault()
+      const bookId = event.target.dataset.bookId
+      const threadId = event.target.dataset.threadId
+      
+      axios({
+        method: 'POST',
+        headers: {'X-CSRFToken': csrftoken},
+        url: `/books/${bookId}/thread/${threadId}/likes/`
+      })
+      .then(response => {
+        const isLike = response.data.is_like
+        const likesCount = response.data.likes_count
+        likesCountSpan.textContent = likesCount
+        
+        const likeButton = document.querySelector(`#like-button-${threadId}`)
+        likeButton.value = isLike ? '좋아요 취소' : '좋아요'
+      })
+      .catch(err => {
+        console.log(err)
+      })
+    })
+
+    commentForm.addEventListener('submit', function (event) {
+      event.preventDefault()
+      const bookId = event.target.dataset.bookId
+      const threadId = event.target.dataset.threadId
+      const formData = new FormData(commentForm)
+
+      axios({
+        method: 'POST',
+        headers: {'X-CSRFToken': csrftoken},
+        url: `/books/${bookId}/comment/${threadId}/create/`,
+        data: formData,
+      })
+      .then(response => {
+        const data = response.data
+        const noComments = document.querySelector('#no-comments')
+        if (noComments) noComments.remove()
+
+        const commentList = document.querySelector('#comment-list')
+        const newComment = document.createElement('div')
+        newComment.id = `comment-${data.comment_id}`
+        newComment.classList.add('d-flex', 'flex-row', 'align-items-baseline', 'gap-2')
+
+        const contentP = document.createElement('p')
+        contentP.textContent = data.content
+
+        const userSmall = document.createElement('small')
+        const userLink = document.createElement('a')
+        userLink.href = `/accounts/profile/${data.username}/`
+        userLink.textContent = ` (${data.username})`
+        userSmall.appendChild(userLink)
+
+        newComment.appendChild(contentP)
+        newComment.appendChild(userSmall)
+
+        if (data.is_owner) {
+          const deleteBtn = document.createElement('button')
+          deleteBtn.classList.add('delete-comment-btn')
+          deleteBtn.setAttribute('data-comment-id', data.comment_id)
+          deleteBtn.textContent = '삭제'
+          newComment.appendChild(deleteBtn)
+        }
+
+        commentList.appendChild(newComment)
+        commentForm.reset()
+      })
+      .catch(err => {
+        console.log(err)
+      })
+
+    })
+      
+    document.querySelector('#comment-list').addEventListener('click', function (event) {
+      if (event.target.classList.contains('delete-comment-btn')) {
+        const commentId = event.target.dataset.commentId
+        const bookId = commentForm.dataset.bookId
+  
+        axios({
+          method: 'POST',
+          url: `/books/${bookId}/comment/${commentId}/delete/`,
+          headers: { 'X-CSRFToken': csrftoken },
+        })
+        .then(response => {
+          if (response.data.status === 'deleted') {
+            const commentElement = document.querySelector(`#comment-${commentId}`)
+            if (commentElement) {
+              commentElement.remove()
+            }
+  
+            const commentList = document.querySelector('#comment-list')
+            const remaining = commentList.querySelectorAll('.delete-comment-btn').length
+            if (remaining === 0) {
+              const emptyMsg = document.createElement('p')
+              emptyMsg.id = 'no-comments'
+              emptyMsg.textContent = '작성된 댓글이 없습니다.'
+              commentList.appendChild(emptyMsg)
+            }
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+      }
+    })
+
+
+  </script>
+{% endblock script %}
+
+
+
