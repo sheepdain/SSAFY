@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <div id="app">
+    <h1>다양한 전시 정보</h1>
+    <ul>
+      <li v-for="exhibit in exhibits" :key="exhibit.title">
+        <h3>{{exhibit.title}} </h3>
+        <p>{{exhibit.place}}</p>
+        <p>가격 : {{exhibit.price}}</p>
+        <hr>
+      </li>
+    </ul>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+  <script>
+    const {createApp, ref}=Vue
+    const app=createApp({
+      setup(){
+        const exhibits=ref([
+          {title: '무라카미 다카시 : 무라카시좀비', place: '부산 시립 미술관', price: 1000},
+          {title: '마우라치오 카텔란 개인전', place: '리움 미술관', price: 30000},
+          {title: '조선백자전', place: '리움 미술관', price: 30000},
+          {title: '한국 실험미술 1960 - 1970', place: '국립현대미술관', price: 0},
+          {title: '에드워드 호퍼 : 길 위에서', place: '서울 시립 미술관', price: 1000},
+          {title: '알렉산더 칼더 x 이우환', place: '국제갤러리 서울점', price: 15000},
+        ])
+        return{
+          exhibits
+        }
+      }
+    })
+    app.mount('#app')
+  </script>
+</body>
+</html>
